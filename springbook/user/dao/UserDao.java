@@ -4,9 +4,16 @@ import springbook.user.domain.User;
 
 import java.sql.*;
 
-public abstract class UserDao {
+public class UserDao {
+
+    private SimpleConnectionMaker simpleConnectionMaker;
+
+    public UserDao() {
+        simpleConnectionMaker = new SimpleConnectionMaker();
+    }
+
     public void add(User user) throws ClassNotFoundException, SQLException{
-        Connection c = getConnection();
+        Connection c = simpleConnectionMaker.makeNewConnection();
         PreparedStatement ps = c.prepareStatement(
                 "insert into users(id, name, password) values(?,?,?)"
         );
@@ -23,7 +30,7 @@ public abstract class UserDao {
 
 
     public User get(String id) throws ClassNotFoundException, SQLException{
-        Connection c = getConnection();
+        Connection c = simpleConnectionMaker.makeNewConnection();
         PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
         ps.setString(1, id);
 
@@ -40,23 +47,23 @@ public abstract class UserDao {
 
         return user;
     }
+    public static void main(String[] args) throws ClassNotFoundException, SQLException{
+        UserDao dao = new UserDao();
 
-    public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
+        User user = new User();
+        user.setId("whiteship");
+        user.setName("백기선");
+        user.setPaaword("married");
 
-    public class NUserDao extends UserDao {
-        @Override
-        public Connection getConnection() throws ClassNotFoundException, SQLException {
-            // N 사 DB connection 생성코드
-            return null;
-        }
-    }
+        dao.add(user);
 
-    public class DUserDao extends UserDao {
-        @Override
-        public Connection getConnection() throws ClassNotFoundException, SQLException {
-            // D 사 DB connection 생성코드
-            return null;
-        }
+        System.out.println(user.getId() + " 등록 성공");
+
+        User user2 = dao.get(user.getId());
+        System.out.println(user2.getName());
+        System.out.println(user2.getPaaword());
+
+        System.out.println(user2.getId() + " 조회 성공");
     }
 }
 
